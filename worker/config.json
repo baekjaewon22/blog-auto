@@ -1,0 +1,25 @@
+{
+  "selectors": {
+    "login": {
+      "id_input": "#id",
+      "pw_input": "#pw",
+      "login_button": ".btn_login"
+    },
+    "editor": {
+      "post_title": ".se-ff-nanumgothic.se-fs32",
+      "content_area": ".se-component-content",
+      "category_button": ".blog2_series",
+      "tag_input": ".tag_inner input",
+      "publish_button": ".btn_publish",
+      "publish_confirm": ".btn_ok",
+      "visibility_public": "#open20",
+      "visibility_neighbor": "#open30",
+      "visibility_private": "#open60"
+    },
+    "post_write_url": "https://blog.naver.com/{blog_id}/postwrite"
+  },
+  "limits": {
+    "min_publish_interval_seconds": 300,
+    "max_daily_publishes_per_account": 5
+  }
+}
