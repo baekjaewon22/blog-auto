@@ -193,7 +193,19 @@ dist
 
 ### Wrangler ###
 .wrangler/
-.env*
-!.env.example
 .dev.vars*
 !.dev.vars.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Data (runtime)
+data/accounts/
+data/logs/
+data/uploads/
+data/db.sqlite
+
+# Docker
+redis_data/
