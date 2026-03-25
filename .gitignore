@@ -206,6 +206,8 @@ data/accounts/
 data/logs/
 data/uploads/
 data/db.sqlite
+data/db.json
+data/secrets.enc.json
 
 # Docker
 redis_data/

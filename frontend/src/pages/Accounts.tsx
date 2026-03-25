@@ -25,6 +25,12 @@ export default function Accounts() {
     reload();
   }
 
+  async function handleDelete(id: string) {
+    if (!confirm("이 계정을 삭제하시겠습니까?")) return;
+    await accountsApi.delete(id);
+    reload();
+  }
+
   async function handleLogin(id: string) {
     setActionLoading(id);
     try {
@@ -130,6 +136,13 @@ export default function Accounts() {
                 className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-400"
               >
                 세션 확인
+              </button>
+              <button
+                onClick={() => handleDelete(acc.id)}
+                disabled={actionLoading === acc.id}
+                className="rounded-lg border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-700 dark:text-red-400"
+              >
+                삭제
               </button>
             </div>
           </div>

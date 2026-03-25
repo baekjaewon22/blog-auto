@@ -4,6 +4,7 @@ import {
   postsApi,
   accountsApi,
   templatesApi,
+  generateApi,
   type Account,
   type Template,
 } from "../api/client";
@@ -29,6 +30,11 @@ export default function PostEditor() {
   const [scheduleMode, setScheduleMode] = useState(false);
   const [scheduledAt, setScheduledAt] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // AI 생성
+  const [topic, setTopic] = useState("");
+  const [aiStyle, setAiStyle] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     accountsApi.list().then(setAccounts).catch(console.error);
@@ -57,6 +63,20 @@ export default function PostEditor() {
     setContent(tmpl.content);
     setCategory(tmpl.category || "");
     setTags(tmpl.tags || []);
+  }
+
+  async function handleGenerate() {
+    if (!topic) return;
+    setGenerating(true);
+    try {
+      const res = await generateApi.generate(topic, aiStyle);
+      setContent(res.content);
+      if (!title) setTitle(topic); // 제목이 비어있으면 주제로 채움
+    } catch (err: any) {
+      alert(`AI 생성 실패: ${err.message}`);
+    } finally {
+      setGenerating(false);
+    }
   }
 
   async function handleSave() {
@@ -121,6 +141,43 @@ export default function PostEditor() {
       </h1>
 
       <div className="space-y-5">
+        {/* ─── AI 글 생성 ─── */}
+        <div className="rounded-lg border-2 border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20">
+          <h2 className="mb-3 text-sm font-bold text-indigo-700 dark:text-indigo-300">
+            AI 글 생성
+          </h2>
+          <div className="space-y-3">
+            <div>
+              <input
+                type="text"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="주제 또는 키워드를 입력하세요 (예: 제주도 3박4일 여행 후기)"
+                className="w-full rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm dark:border-indigo-700 dark:bg-gray-800 dark:text-white"
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                value={aiStyle}
+                onChange={(e) => setAiStyle(e.target.value)}
+                placeholder="스타일 지시 (선택, 예: 20대 여성 블로거 느낌으로)"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              />
+            </div>
+            <button
+              onClick={handleGenerate}
+              disabled={generating || !topic}
+              className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {generating ? "AI 글 생성 중..." : "AI로 글 생성"}
+            </button>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              설정에서 등록한 API 키와 AI 프롬프트가 적용됩니다.
+            </p>
+          </div>
+        </div>
+
         {/* 템플릿 선택 */}
         {!isEdit && templates.length > 0 && (
           <div>

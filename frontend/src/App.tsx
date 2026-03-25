@@ -6,12 +6,15 @@ import PostEditor from "./pages/PostEditor";
 import Templates from "./pages/Templates";
 import Accounts from "./pages/Accounts";
 import Logs from "./pages/Logs";
+import ApiKeys from "./pages/ApiKeys";
+import Settings from "./pages/Settings";
 
 const navItems = [
   { to: "/", label: "대시보드" },
   { to: "/posts", label: "글 관리" },
   { to: "/templates", label: "템플릿" },
   { to: "/accounts", label: "계정" },
+  { to: "/settings", label: "설정" },
   { to: "/logs", label: "로그" },
 ];
 
@@ -63,6 +66,8 @@ export default function App() {
             <Route path="/posts/:id/edit" element={<PostEditor />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/accounts" element={<Accounts />} />
+            <Route path="/apikeys" element={<ApiKeys />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/logs" element={<Logs />} />
           </Routes>
         </main>

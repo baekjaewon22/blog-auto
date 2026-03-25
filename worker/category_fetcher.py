@@ -91,7 +91,7 @@ def main():
     args = parser.parse_args()
 
     result = asyncio.run(fetch_categories(args.account_id, args.blog_id))
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    print(json.dumps(result, ensure_ascii=True, indent=2))
     sys.exit(0 if result["success"] else 1)
 
 

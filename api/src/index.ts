@@ -9,6 +9,11 @@ import accountsRoutes from "./routes/accounts.js";
 import jobsRoutes from "./routes/jobs.js";
 import categoriesRoutes from "./routes/categories.js";
 import templatesRoutes from "./routes/templates.js";
+import apikeysRoutes from "./routes/apikeys.js";
+import settingsRoutes from "./routes/settings.js";
+import foldersRoutes from "./routes/folders.js";
+import runnerRoutes from "./routes/runner.js";
+import generateRoutes from "./routes/generate.js";
 import { startWorker } from "./queue/worker.js";
 
 const app = new Hono();
@@ -29,6 +34,11 @@ app.route("/api/accounts", accountsRoutes);
 app.route("/api/jobs", jobsRoutes);
 app.route("/api/categories", categoriesRoutes);
 app.route("/api/templates", templatesRoutes);
+app.route("/api/apikeys", apikeysRoutes);
+app.route("/api/settings", settingsRoutes);
+app.route("/api/folders", foldersRoutes);
+app.route("/api/runner", runnerRoutes);
+app.route("/api/generate", generateRoutes);
 
 // 정적 파일 서빙 (프론트엔드 빌드)
 app.use("/*", serveStatic({ root: "../frontend/dist" }));

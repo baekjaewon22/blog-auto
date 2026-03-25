@@ -42,10 +42,11 @@ async def manual_login(account_id: str) -> dict:
         # 네이버 로그인 페이지로 이동
         await page.goto(NAVER_LOGIN_URL, wait_until="networkidle")
 
-        print("=" * 50)
-        print("브라우저에서 네이버 로그인을 완료해 주세요.")
-        print("로그인 후 자동으로 쿠키가 저장됩니다.")
-        print("=" * 50)
+        import sys as _sys
+        print("=" * 50, file=_sys.stderr)
+        print("브라우저에서 네이버 로그인을 완료해 주세요.", file=_sys.stderr)
+        print("로그인 후 자동으로 쿠키가 저장됩니다.", file=_sys.stderr)
+        print("=" * 50, file=_sys.stderr)
 
         # 로그인 완료 대기 (마이페이지 또는 메인 페이지로 이동 감지)
         try:
@@ -139,7 +140,7 @@ def main():
     else:
         result = asyncio.run(manual_login(args.account_id))
 
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    print(json.dumps(result, ensure_ascii=True, indent=2))
 
     if args.check:
         sys.exit(0 if result["valid"] else 1)

@@ -16,7 +16,7 @@
       "visibility_neighbor": "#open30",
       "visibility_private": "#open60"
     },
-    "post_write_url": "https://blog.naver.com/{blog_id}/postwrite"
+    "post_write_url": "https://blog.naver.com/GoBlogWrite.naver?blogId={blog_id}"
   },
   "limits": {
     "min_publish_interval_seconds": 300,

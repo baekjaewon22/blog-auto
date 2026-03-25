@@ -4,12 +4,11 @@ import { nanoid } from "nanoid";
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-import { db, schema } from "../db/index.js";
-import { eq } from "drizzle-orm";
+import { db } from "../db/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORKER_DIR = path.resolve(__dirname, "../../../worker");
-const PYTHON = process.env.PYTHON_PATH || "python3";
+const PYTHON = process.env.PYTHON_PATH || "python";
 
 const app = new Hono();
 
@@ -23,7 +22,12 @@ function runPythonScript(
   args: string[],
 ): Promise<{ stdout: string; stderr: string; code: number }> {
   return new Promise((resolve) => {
-    const proc = spawn(PYTHON, [script, ...args], { cwd: WORKER_DIR });
+    const proc = spawn(PYTHON, [script, ...args], {
+      cwd: WORKER_DIR,
+      shell: true,
+      windowsHide: false,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
     let stdout = "";
     let stderr = "";
     proc.stdout.on("data", (d) => (stdout += d.toString()));
@@ -34,8 +38,7 @@ function runPythonScript(
 
 // 계정 목록
 app.get("/", async (c) => {
-  const allAccounts = await db.select().from(schema.accounts);
-  return c.json(allAccounts);
+  return c.json(db.getAccounts());
 });
 
 // 계정 등록
@@ -45,85 +48,59 @@ app.post("/", async (c) => {
   if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
 
   const id = nanoid();
-  await db.insert(schema.accounts).values({
+  db.insertAccount({
     id,
     blogId: parsed.data.blogId,
     displayName: parsed.data.displayName,
     sessionValid: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
-
   return c.json({ id }, 201);
 });
 
-// 로그인 실행 (Python 스크립트로 브라우저 띄우기)
+// 계정 삭제
+app.delete("/:id", async (c) => {
+  const id = c.req.param("id");
+  db.deleteAccount(id);
+  return c.json({ success: true });
+});
+
+// 로그인 실행
 app.post("/:id/login", async (c) => {
   const id = c.req.param("id");
-  const [account] = await db
-    .select()
-    .from(schema.accounts)
-    .where(eq(schema.accounts.id, id));
-
+  const account = db.getAccount(id);
   if (!account) return c.json({ error: "계정을 찾을 수 없습니다." }, 404);
 
-  const result = await runPythonScript("login.py", [
-    "--account-id",
-    id,
-  ]);
-
+  const result = await runPythonScript("login.py", ["--account-id", id]);
   let parsed;
   try {
     parsed = JSON.parse(result.stdout);
   } catch {
-    return c.json(
-      { error: "로그인 스크립트 실행 실패", detail: result.stderr },
-      500,
-    );
+    return c.json({ error: "로그인 스크립트 실행 실패", detail: result.stderr }, 500);
   }
 
   if (parsed.success) {
-    await db
-      .update(schema.accounts)
-      .set({ sessionValid: true, updatedAt: new Date().toISOString() })
-      .where(eq(schema.accounts.id, id));
+    db.updateAccount(id, { sessionValid: true, updatedAt: new Date().toISOString() });
   }
-
   return c.json(parsed);
 });
 
 // 세션 상태 확인
 app.get("/:id/status", async (c) => {
   const id = c.req.param("id");
-  const [account] = await db
-    .select()
-    .from(schema.accounts)
-    .where(eq(schema.accounts.id, id));
-
+  const account = db.getAccount(id);
   if (!account) return c.json({ error: "계정을 찾을 수 없습니다." }, 404);
 
-  const result = await runPythonScript("login.py", [
-    "--account-id",
-    id,
-    "--check",
-  ]);
-
+  const result = await runPythonScript("login.py", ["--account-id", id, "--check"]);
   let parsed;
   try {
     parsed = JSON.parse(result.stdout);
   } catch {
-    return c.json(
-      { error: "세션 확인 실패", detail: result.stderr },
-      500,
-    );
+    return c.json({ error: "세션 확인 실패", detail: result.stderr }, 500);
   }
 
-  await db
-    .update(schema.accounts)
-    .set({
-      sessionValid: parsed.valid,
-      updatedAt: new Date().toISOString(),
-    })
-    .where(eq(schema.accounts.id, id));
-
+  db.updateAccount(id, { sessionValid: parsed.valid, updatedAt: new Date().toISOString() });
   return c.json(parsed);
 });
 
